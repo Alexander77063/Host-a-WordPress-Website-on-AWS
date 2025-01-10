@@ -1,0 +1,87 @@
+graph TB
+    %% External Points
+    Users((Internet Users))
+    DevOps((DevOps Team))
+    
+    %% DNS and Security
+    Route53[Route 53]
+    ACM[Certificate Manager]
+    
+    %% Load Balancer
+    ALB[Application Load Balancer]
+    TG[Target Group]
+    
+    %% VPC Container
+    subgraph VPC[Virtual Private Cloud]
+        %% AZ-A Components
+        subgraph AZ-A[Availability Zone A]
+            PublicA[Public Subnet A]
+            subgraph PrivateA[Private Subnets A]
+                AppA[App Subnet A]
+                DataA[Data Subnet A]
+            end
+        end
+        
+        %% AZ-B Components
+        subgraph AZ-B[Availability Zone B]
+            PublicB[Public Subnet B]
+            subgraph PrivateB[Private Subnets B]
+                AppB[App Subnet B]
+                DataB[Data Subnet B]
+            end
+        end
+        
+        %% Network Components
+        IGW[Internet Gateway]
+        NATGW[NAT Gateway]
+        EIC[EC2 Instance Connect]
+        
+        %% Application Components
+        ASG[Auto Scaling Group]
+        EC2A[EC2 Instance A]
+        EC2B[EC2 Instance B]
+        
+        %% Storage Components
+        EFS[EFS Mount Targets]
+        RDSPrimary[(RDS Primary)]
+        RDSStandby[(RDS Standby)]
+    end
+    
+    %% External Services
+    SNS[SNS Topic]
+    GitHub[(GitHub Repo)]
+    
+    %% Connections - User Flow
+    Users --> Route53
+    Route53 --> ACM
+    ACM --> ALB
+    ALB --> TG
+    TG --> EC2A & EC2B
+    
+    %% Network Flow
+    IGW --> PublicA & PublicB
+    PublicA & PublicB --> NATGW
+    NATGW --> AppA & AppB
+    
+    %% Application Connections
+    DevOps --> GitHub
+    GitHub --> EC2A & EC2B
+    EC2A & EC2B --> EFS
+    EC2A & EC2B --> RDSPrimary
+    RDSPrimary -.-> RDSStandby
+    
+    %% Management
+    ASG --> SNS
+    EIC --> AppA & AppB
+    
+    %% Styling
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px;
+    classDef subnet fill:#7AA116,stroke:#232F3E,stroke-width:2px;
+    classDef storage fill:#3B48CC,stroke:#232F3E,stroke-width:2px;
+    classDef endpoint fill:#FF0000,stroke:#232F3E,stroke-width:2px;
+    
+    class Route53,ACM,ALB,IGW,NATGW,ASG,EIC aws;
+    class PublicA,PublicB,AppA,AppB,DataA,DataB subnet;
+    class EFS,RDSPrimary,RDSStandby storage;
+    class Users,DevOps endpoint;
+
