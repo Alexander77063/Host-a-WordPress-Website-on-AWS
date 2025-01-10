@@ -1,3 +1,5 @@
+![Alt text](aws-wordpress-detailed.mermaid)
+
 # WordPress Deployment on AWS Cloud Infrastructure
 
 ## Project Overview
